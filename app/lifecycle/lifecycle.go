@@ -68,9 +68,11 @@ func Run() {
 	// Are we first use?
 	if !store.GetFirstTimeRun() {
 		slog.Debug("First time run")
-		err = t.DisplayFirstUseNotification()
-		if err != nil {
-			slog.Debug(fmt.Sprintf("XXX failed to display first use notification %v", err))
+		if !notray { // skip first run notification if flag is set
+			err = t.DisplayFirstUseNotification()
+			if err != nil {
+				slog.Debug(fmt.Sprintf("XXX failed to display first use notification %v", err))
+			}
 		}
 		store.SetFirstTimeRun(true)
 	} else {
@@ -91,12 +93,11 @@ func Run() {
 		}
 	}
 
-	StartBackgroundUpdaterChecker(ctx, t.UpdateAvailable)
-
 	if notray {
 		<-signals
 		slog.Debug("shutting down due to signal")
 	} else {
+		StartBackgroundUpdaterChecker(ctx, t.UpdateAvailable)
 		t.Run()
 	}
 	cancel()
